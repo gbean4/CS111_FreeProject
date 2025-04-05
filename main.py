@@ -17,13 +17,12 @@ if st.button("Save"):
     st.success("Data saved successfully!")
 
 today_date = st.date_input("Today's date:", value="today", format="YYYY/MM/DD")
-formated_today = datetime.strptime(today_date, "%m/%d/%Y")
 # @st.cache(allow_output_mutation=True)
 def get_data():
     return []
 
 for i, row in canvas.iterrows():
-    if row['dtstart'] > formated_today:
+    if row['dtstart'] > today_date:
         st.write(f"Overdue:")
         checked = st.checkbox(row['summary'], key=f"check_{i}")
         canvas.at[i, 'status'] = 'T' if checked else 'F'
