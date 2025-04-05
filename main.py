@@ -24,7 +24,20 @@ today_date = st.date_input("Today's date:", value="today", format="MM/DD/YYYY")
 today_date = pd.to_datetime(today_date)
 canvas['dtstart'] = pd.to_datetime(canvas['dtstart'])
 
-#sort by due date
+#add item to the list using title and due date
+st.write("Feel free to add new tasks:")
+task_title = st.text_input("Task:")
+task_due_date = st.date_input("Due Date", value=today_date, format="MM/DD/YYYY")
+task_due_date = pd.to_datetime(task_due_date)
+if st.button("Add Task"):
+    if task_title:
+        new_task = pd.DataFrame({'summary': [task_title], 'dtstart': [task_due_date], 'status': ['F']})
+        canvas = pd.concat([canvas, new_task], ignore_index=True)
+        st.success(f"Task '{task_title}' added successfully!")
+    else:
+        st.error("Please enter a task title.")
+
+# sort by due date
 st.write("### 🔴 Overdue")
 for i, row in canvas[(canvas['dtstart'] < today_date) & (canvas['status'] != 'T')].iterrows():
         checked = st.checkbox(row['summary'], key=f"overdue_check_{i}", value=(row['status'] == 'T'))
@@ -43,35 +56,6 @@ for i, row in canvas[canvas['status'] == 'T'].iterrows():
     # If the user unchecks the box, mark it as not completed
         if not checked:
             canvas.at[i, 'status'] = 'F'
-        # st.checkbox(f"~~{row['summary']}~~", value=True, key=f"completed_check_{i}", disabled=True)
-        # checked = st.checkbox(f"~~{row['summary']}~~", key=f"completed_check_{i}", value=True)
-        # canvas.at[i, 'status'] = 'T' if checked else 'F' 
-        
-        # checked = st.checkbox(row['summary'], key=f"check_{i}", value=True)
-        # canvas.at[i, 'status'] = 'T' if checked else 'F'
-
-# separate my tasks by due date
-# overdue = canvas[canvas['dtstart'] < today_date]
-# today = canvas[canvas['dtstart'] == today_date]
-# upcoming = canvas[canvas['dtstart'] > today_date]
-
-#function to render tasks based on their status
-# def render_tasks(tasks_df, section_title):
-#     st.write(f"### {section_title}")
-#     for i, row in tasks_df.iterrows():
-#         checked = st.checkbox(row['summary'], key=f"check_{i}", value=(row['status'] == 'T'))
-#         canvas.at[i, 'status'] = 'T' if checked else 'F'
-
-# render_tasks(overdue[overdue['status'] != 'T'], "Overdue")
-# render_tasks(today[today['status'] != 'T'], "Today")
-# render_tasks(upcoming[upcoming['status'] != 'T'], "Upcoming")
-
-# Show completed tasks
-# completed = canvas[canvas['status'] == 'T']
-# if not completed.empty:
-#     st.write("### ✅ Completed")
-#     for i, row in completed.iterrows():
-#         st.checkbox(f"~~{row['summary']}~~", value=True, key=f"completed_{i}", disabled=True)
 
 
 
