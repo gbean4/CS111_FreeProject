@@ -23,7 +23,8 @@ if 'canvas' not in st.session_state:
     st.session_state.canvas = pd.read_csv('canvas.csv')
     st.session_state.canvas['dtstart'] = pd.to_datetime(st.session_state.canvas['dtstart'])
 
-canvas = st.session_state.canvas.sort_values(by=['priority','dtstart'], ascending=[False,True])
+# canvas = st.session_state.canvas.sort_values(by=['priority','dtstart'], ascending=[False,True])
+canvas = st.session_state.canvas.sort_values(by='dtstart', ascending=True)
 canvas['dtstart'] = pd.to_datetime(canvas['dtstart'])
 
 #save button to update the csv 
@@ -35,14 +36,15 @@ if st.button("Save"):
 task_title = st.text_input("Add new task:", key = "task_title")
 task_due_date = st.date_input("Due Date", value=today_date, format="MM/DD/YYYY")
 task_due_date = pd.to_datetime(task_due_date)
-task_priority = st.selectbox("Priority", [3, 2, 1], format_func=lambda x: {3: "High", 2: "Medium", 1: "Low"}[x])
+# task_priority = st.selectbox("Priority", [3, 2, 1], format_func=lambda x: {3: "High", 2: "Medium", 1: "Low"}[x])
 if st.button("Add Task"):
     if task_title:
         new_task = pd.DataFrame({'summary': [task_title], 'dtstart': [task_due_date], 'status': ['F'], 'uid': [f"event-assignment-{random.randint(1, 1000)}"], 'priority': [task_priority]})
         st.session_state.canvas = pd.concat([canvas, new_task], ignore_index=True)
         st.success(f"Task '{task_title}' added successfully!")
         canvas = pd.concat([canvas, new_task], ignore_index=True)
-        canvas = canvas.sort_values(by=['priority','dtstart'], ascending=[False,True]).reset_index(drop=True)
+        # canvas = canvas.sort_values(by=['priority','dtstart'], ascending=[False,True]).reset_index(drop=True)
+        canvas = canvas.sort_values(by='dtstart', ascending=True).reset_index(drop=True)
     else:
         st.error("Please enter a task title.")
 
