@@ -23,7 +23,7 @@ if 'canvas' not in st.session_state:
     st.session_state.canvas = pd.read_csv('canvas.csv')
     st.session_state.canvas['dtstart'] = pd.to_datetime(st.session_state.canvas['dtstart'])
 
-canvas = st.session_state.canvas
+canvas = st.session_state.canvas.sort_values(by=['priority','dtstart'], ascending=[False,True])
 canvas['dtstart'] = pd.to_datetime(canvas['dtstart'])
 
 #save button to update the csv 
@@ -32,15 +32,19 @@ if st.button("Save"):
     st.success("Data saved successfully!")
 
 #add item to the list using title and due date
-task_title = st.text_input("Add new task:")
+task_title = st.text_input("Add new task:", key = "task_title")
 task_due_date = st.date_input("Due Date", value=today_date, format="MM/DD/YYYY")
 task_due_date = pd.to_datetime(task_due_date)
+task_priority = st.selectbox("Priority", [3, 2, 1], format_func=lambda x: {3: "High", 2: "Medium", 1: "Low"}[x])
 if st.button("Add Task"):
     if task_title:
-        new_task = pd.DataFrame({'summary': [task_title], 'dtstart': [task_due_date], 'status': ['F'], 'uid': [f"event-assignment-{random.randint(1, 1000)}"]})
-        canvas = pd.concat([canvas, new_task], ignore_index=True)
+        new_task = pd.DataFrame({'summary': [task_title], 'dtstart': [task_due_date], 'status': ['F'], 'uid': [f"event-assignment-{random.randint(1, 1000)}"], 'priority': [task_priority]})
         st.session_state.canvas = pd.concat([canvas, new_task], ignore_index=True)
         st.success(f"Task '{task_title}' added successfully!")
+        canvas = pd.concat([canvas, new_task], ignore_index=True)
+        canvas = canvas.sort_values(by=['priority','dtstart'], ascending=[False,True]).reset_index(drop=True)
+        # st.session_state.canvas = pd.concat([canvas, new_task], ignore_index=True)
+        # st.success(f"Task '{task_title}' added successfully!")
     else:
         st.error("Please enter a task title.")
 
@@ -48,15 +52,15 @@ if st.button("Add Task"):
 st.write("### 🔴 Overdue")
 for i, row in canvas[(canvas['dtstart'] < today_date) & (canvas['status'] != 'T')].iterrows():
         checked = st.checkbox(row['summary'], key=f"overdue_check_{i}", value=(row['status'] == 'T'))
-        canvas.at[i, 'status'] = 'T' and st.balloons() if checked else 'F'
+        canvas.at[i, 'status'] = 'T' if checked else 'F'
 st.write("### 🔵 Today")
 for i, row in canvas[(canvas['dtstart'] == today_date) & (canvas['status'] != 'T')].iterrows():
         checked = st.checkbox(row['summary'], key=f"check_{i}")
-        canvas.at[i, 'status'] = 'T' and st.balloons() if checked else 'F'
+        canvas.at[i, 'status'] = 'T'if checked else 'F'
 st.write("### 🟢 Upcoming")
 for i, row in canvas[(canvas['dtstart'] > today_date) & (canvas['status'] != 'T')].iterrows():
         checked = st.checkbox(row['summary'], key=f"check_{i}")
-        canvas.at[i, 'status'] = 'T' and st.balloons() if checked else 'F'
+        canvas.at[i, 'status'] = 'T' if checked else 'F'
 st.write("### ✅ Completed")
 for i, row in canvas[canvas['status'] == 'T'].iterrows():
         checked = st.checkbox(f"~~{row['summary']}~~", value=True, key=f"completed_check_{i}")
