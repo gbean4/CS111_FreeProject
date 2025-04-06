@@ -43,8 +43,6 @@ if st.button("Add Task"):
         st.success(f"Task '{task_title}' added successfully!")
         canvas = pd.concat([canvas, new_task], ignore_index=True)
         canvas = canvas.sort_values(by=['priority','dtstart'], ascending=[False,True]).reset_index(drop=True)
-        # st.session_state.canvas = pd.concat([canvas, new_task], ignore_index=True)
-        # st.success(f"Task '{task_title}' added successfully!")
     else:
         st.error("Please enter a task title.")
 
@@ -66,37 +64,3 @@ for i, row in canvas[canvas['status'] == 'T'].iterrows():
         checked = st.checkbox(f"~~{row['summary']}~~", value=True, key=f"completed_check_{i}")
         if not checked:
             canvas.at[i, 'status'] = 'F'
-
-
-
-
-
-
-# st.write(canvas)
-
-# for item in canvas['summary']:
-#     st.checkbox(item)
-#     if st.checkbox(item):
-#         canvas.at[canvas['summary'] == item, 'status'] = 'T'
-
-# @st.cache(allow_output_mutation=True)
-# def get_data():
-#     return []
-
-# user_id = st.text_inp"User ID")
-# foo = st.slider("foo", 0, 100)
-# bar = st.slider("bar", 0, 100)
-
-# if st.button("Add row"):
-#     get_data().append({"UserID": user_id, "foo": foo, "bar": bar})
-
-# st.write(pd.DataFrame(get_data()))
-
-# for date, index, description, item in canvas.iterrows():
-#     st.checkbox(item)
-    # task = row['summary']
-    # completed = row['Completed']
-    # if st.checkbox(task, value=completed):
-    #     canvas.at[index, 'Completed'] = True
-    # else:
-    #     canvas.at[index, 'Completed'] = False
