@@ -39,7 +39,7 @@ task_due_date = pd.to_datetime(task_due_date)
 # task_priority = st.selectbox("Priority", [3, 2, 1], format_func=lambda x: {3: "High", 2: "Medium", 1: "Low"}[x])
 if st.button("Add Task"):
     if task_title:
-        new_task = pd.DataFrame({'summary': [task_title], 'dtstart': [task_due_date], 'status': ['F'], 'uid': [f"event-assignment-{random.randint(1, 1000)}"], 'priority': [task_priority]})
+        new_task = pd.DataFrame({'summary': [task_title], 'dtstart': [task_due_date], 'status': ['F'], 'uid': [f"event-assignment-{random.randint(1, 1000)}"]})
         st.session_state.canvas = pd.concat([canvas, new_task], ignore_index=True)
         st.success(f"Task '{task_title}' added successfully!")
         canvas = pd.concat([canvas, new_task], ignore_index=True)
