@@ -1,16 +1,12 @@
 #using this code to deploy my to do list model
+
 #import libraries
 import pandas as pd
 import streamlit as st
-import seaborn as sns
-import matplotlib.pyplot as plt
-from datetime import datetime
 
 #date input for the user to select the date
-# st.write("Please select the date for your tasks:")
 today_date = st.date_input("Today's date:", value="today", format="MM/DD/YYYY")
 today_date = pd.to_datetime(today_date)
-
 
 #top important intros
 st.title('My To Do List')
@@ -42,26 +38,38 @@ if st.button("Add Task"):
         st.session_state.canvas = pd.concat([canvas, new_task], ignore_index=True)
         st.success(f"Task '{task_title}' added successfully!")
         canvas = pd.concat([canvas, new_task], ignore_index=True)
+        #remains of my priority code below. rip
         # canvas = canvas.sort_values(by=['priority','dtstart'], ascending=[False,True]).reset_index(drop=True)
         canvas = canvas.sort_values(by='dtstart', ascending=True).reset_index(drop=True)
     else:
         st.error("Please enter a task title.")
 
 # sort by due date
+# Filter non-completed tasks first
+not_completed = canvas[canvas['status'] != 'T']
+
 st.write("### 🔴 Overdue")
-for i, row in canvas[(canvas['dtstart'] < today_date) & (canvas['status'] != 'T')].iterrows():
-        checked = st.checkbox(row['summary'], key=f"overdue_check_{i}", value=(row['status'] == 'T'))
-        canvas.at[i, 'status'] = 'T' if checked else 'F'
+for i, row in not_completed[not_completed['dtstart'] < today_date].iterrows():
+    checked = st.checkbox(row['summary'], key=f"overdue_check_{i}", value=False)
+    if checked:
+        st.session_state.canvas.at[i, 'status'] = 'T'
+
 st.write("### 🔵 Today")
-for i, row in canvas[(canvas['dtstart'] == today_date) & (canvas['status'] != 'T')].iterrows():
-        checked = st.checkbox(row['summary'], key=f"check_{i}")
-        canvas.at[i, 'status'] = 'T'if checked else 'F'
+for i, row in not_completed[not_completed['dtstart'].dt.date == today_date.date()].iterrows():
+    checked = st.checkbox(row['summary'], key=f"today_check_{i}", value=False)
+    if checked:
+        st.session_state.canvas.at[i, 'status'] = 'T'
+
 st.write("### 🟢 Upcoming")
-for i, row in canvas[(canvas['dtstart'] > today_date) & (canvas['status'] != 'T')].iterrows():
-        checked = st.checkbox(row['summary'], key=f"check_{i}")
-        canvas.at[i, 'status'] = 'T' if checked else 'F'
+for i, row in not_completed[not_completed['dtstart'] > today_date].iterrows():
+    checked = st.checkbox(row['summary'], key=f"upcoming_check_{i}", value=False)
+    if checked:
+        st.session_state.canvas.at[i, 'status'] = 'T'
+
 st.write("### ✅ Completed")
-for i, row in canvas[canvas['status'] == 'T'].iterrows():
-        checked = st.checkbox(f"~~{row['summary']}~~", value=True, key=f"completed_check_{i}")
-        if not checked:
-            canvas.at[i, 'status'] = 'F'
+completed_tasks = canvas[canvas['status'] == 'T']
+#filter uncompleted from completed
+for i, row in completed_tasks.iterrows():
+    unchecked = st.checkbox(f"~~{row['summary']}~~", key=f"completed_check_{i}", value=True)
+    if not unchecked:
+        st.session_state.canvas.at[i, 'status'] = 'F'
